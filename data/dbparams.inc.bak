@@ -1,0 +1,22 @@
+<?  
+    
+    $usr = "open"; 
+    $pwd = "rts6736"; 
+    $db = "open"; 
+    $host = "www.opensistemas.com.ar"; 
+    
+    
+    /*
+    $usr = "root"; 
+    $pwd = ""; 
+    $db = "open"; 
+    $host = "localhost"; 
+    */
+    
+    /*
+    $usr = "root"; 
+    $pwd = ""; 
+    $db = "OPEN"; 
+    $host = "192.168.0.200"; 
+    */
+?>

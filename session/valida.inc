@@ -1,0 +1,198 @@
+<?php
+	Function ValidaPassword($IdCliente,$pass,$sessID,&$nivel,$conexion){
+		$password = "";
+
+		$SQL = " select password, nivel, sessionId "; 
+		$SQL = $SQL . " from WebUsuario ";
+		$SQL = $SQL . " where  ";
+		$SQL = $SQL . "  IdUsuario = '$IdCliente' " ;
+		$SQL = $SQL . "  and IsNull(activo,'S') = 'S' " ;
+
+		$retid = OpenQuery($SQL, $conexion); 
+		if (!$retid) { 
+		} else {
+			if ($row = proximo($retid)) {
+				$sess = $row["sessionId"];
+				$password = $row["password"];
+				$nivel = $row["nivel"];
+				$resul = ( (trim($IdCliente)!="") and ($pass==$password) );
+			} else {
+				$sess = "";
+				$password = "";
+				$nivel = 1;
+				$resul = false;
+			};				
+		};
+		if ($resul) {
+/*
+			if (sessionExists($sess)) {
+				$sess = "";
+				$password = "";
+				$nivel = 1;
+				$resul = false;
+			} else {
+				$SQL = "UPDATE WebUsuario Set SessionId = '$sessID' where idUsuario = '$IdCliente' ";
+				OpenQuery($SQL, $conexion);
+			}; 
+*/			
+			if ( (sessionExists($sess)) and ($sess<>$sessID) ){
+				$filename = session_save_path()."/sess_".$sess;
+				unlink($filename);
+			};
+			$SQL = "UPDATE WebUsuario Set SessionId = '$sessID' where idUsuario = '$IdCliente' ";
+			echo $SQL;
+			OpenQuery($SQL, $conexion);
+			
+		};
+		return $resul;
+	};
+	
+	function validaAcceso($seccion,$conexion) {
+	if ((isSet($_SESSION["nivelUsuario"])) and ($_SESSION["nivelUsuario"]>0)) {
+		$nivel = $_SESSION["nivelUsuario"];
+		
+		$SQL = " select seccion "; 
+		$SQL = $SQL . " from WebAcceso ";
+		$SQL = $SQL . " where  ";
+		$SQL = $SQL . "  (nivel = $nivel) and (seccion = '$seccion')" ;
+		
+		$valida = true;
+		
+		$retid = OpenQuery($SQL, $conexion); 
+		if (!$retid) { 
+			
+		} else {
+			if ($row = proximo($retid)) {
+				$valida = false;
+			};
+		};
+	} else {
+		$valida = false;
+	};
+	return $valida;	
+};
+	
+ function logginReq( $modo ) {
+	   $value=false;
+		switch ($modo) {
+			case "arbol": {
+				//$value=true;
+				$value=false;
+			}
+		   break;
+		
+			case "favoritas": {
+			    $value=true;
+			}
+		   break;
+		
+			case "recomendado": {
+				$value=false;
+			}
+		   break;
+	   }		
+	   return $value;
+ };
+
+function nombreUsuario($usuario,$conexion) {
+	$SQL = " select apellido,nombre "; 
+	$SQL = $SQL . " from WebUsuario ";
+	$SQL = $SQL . " where  ";
+	$SQL = $SQL . "  IdUsuario = '$usuario' " ;
+	
+	$nombre = "";
+	
+	$retid = OpenQuery($SQL, $conexion); 
+	if (!$retid) { 
+		echo "Error interno: Error al consultar";
+	} else {
+		if ($row = proximo($retid)) {
+			$nombre = $row["apellido"].", ".$row["nombre"];
+			//$nombre = $row["apellido"]." ".$row["nombre"];
+		};
+	};
+	return $nombre;
+};
+
+function planUsuario($usuario, $conexion) {
+	$SQL = " select idPlan "; 
+	$SQL = $SQL . " from WebUsuario ";
+	$SQL = $SQL . " where  ";
+	$SQL = $SQL . "  IdUsuario = '$usuario' " ;
+	
+	$plan = -1;
+	$retid = OpenQuery($SQL, $conexion); 
+	if (!$retid) { 
+		echo "Error interno: Error al consultar";
+	} else {
+		if ($row = proximo($retid)) {
+			$plan = $row["idPlan"];
+		};
+	};
+	return $plan;
+};
+	
+/*
+function validaBajada($usuario, $nivelUsuario, $archivo, $conexion) {
+	$SQL = " select Pub.IdPublica as Id, Pub.IdFuenteCEB, Pub.NombrePDF, ";
+	$SQL = $SQL . " F.pago as pago, F.nivelMinimo as nivelPub "; 
+	$SQL = $SQL . " from NT_Publica Pub ";
+	$SQL = $SQL . "       inner join NT_FuentesCEB F ";
+	$SQL = $SQL . "       on Pub.IdFuenteCEB = F.IdFuente ";
+	$SQL = $SQL . " where  ";
+	$SQL = $SQL . "  Pub.NombrePDF = '$archivo' " ;
+	
+	$retid = OpenQuery($SQL, $conexion); 
+	if (!$retid) { 
+		echo "Error interno: Error al consultar";
+	} else {
+		if ($row = proximo($retid)) {
+			//$resul = ( ($row["pago"]=="N") or ($nivelUsuario >= 2) );
+			if ( $row["nivelPub"]<= $nivelUsuario ) {
+				
+				//nivelSeleccion es el nivel en el que el uuario elige 1 pub. de 3 posibles
+				$nivelSeleccion=3;
+				if (($row["pago"]=="N") or ($nivelUsuario<>$nivelSeleccion)) {
+					//No es necesario validar publicaciones elegidas
+					$resul = true;
+				} else {
+					//Valido que la pub. sea elegida por el usuario
+					
+					$resul = false;
+				};
+				
+			} else {
+				//El usuario no tiene derechos suficientes
+				$resul = false;
+			};	
+		} else {
+			//No se encuentra un archivo que cumple 
+			$resul = false;
+		};
+	};
+
+	return $resul;
+};
+*/
+
+/*
+function getUsersOnline() {
+    $count = 0;
+
+    $handle = opendir(session_save_path());
+    if ($handle == false) return -1;
+
+    while (($file = readdir($handle)) != false) {
+        if (ereg("^sess", $file)) $count++;
+    }
+    closedir($handle);
+
+    return $count;
+}
+*/
+function sessionExists($sessId) {
+	$filename = session_save_path()."/sess_".$sessId;
+	return (file_exists($filename));
+};
+
+?>

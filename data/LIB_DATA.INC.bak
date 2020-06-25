@@ -1,0 +1,21 @@
+<?
+	function conectar($servidor,$usuario,$password) {
+		return mysql_connect($servidor,$usuario,$password);
+	};	
+	
+	function openQuery($SQL, $conexion) {
+		return mysql_query($SQL, $conexion);
+	};
+	
+	function proximo ($recordSet) {
+		return mysql_fetch_array($recordSet);
+	};
+	
+	function selDB ($db, $conexion) {
+		return mysql_select_db ($db, $conexion);
+	};
+	
+	function queryDB($sql, $conexion) {
+		return mysql_query($sql, $conexion); 
+	};
+?>

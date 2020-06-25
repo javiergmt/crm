@@ -1,0 +1,91 @@
+<? 
+   //Inicio la sesión
+   session_start( ); 
+   
+   //Si es creación de sesión inicializo las variables
+
+   If (!IsSet($_SESSION["iniciada"])) {
+   		
+       $datos_conexion = array();
+       $datos_conexion[0]=$_SERVER["HTTP_USER_AGENT"];
+       if (isset($_SERVER["QUERY_STRING"])) {
+          $datos_conexion[1]=$_SERVER["QUERY_STRING"];
+       } else {
+          $datos_conexion[1]="";
+       }   	   
+      $datos_conexion[2]=fetchip();
+
+      $idsesion=session_id();
+      $_SESSION["Id_Sesion"]=$idsesion;
+  	
+      $_SESSION["datos_conexion"] = $datos_conexion;	
+  
+	// Si la sesion es la misma no vuelvo a grabar 	
+	If ( (!IsSet($_SESSION["PrevSession"])) or ($_SESSION["Id_Sesion"]<>$_SESSION["PrevSession"]) ) {
+	   $EntReg=0;  
+   	   $_SESSION["Entrada_Reg"]=$EntReg;
+   	   $NavReg=0;  
+   	   $_SESSION["Navega_Reg"]=$NavReg;
+   	} else {
+	   $EntReg=1;  
+   	   $_SESSION["Entrada_Reg"]=$EntReg;
+   	   $NavReg=1;  
+   	   $_SESSION["Navega_Reg"]=$NavReg;
+	};   		
+	
+    
+      $iniciada = true;
+      //session_register("iniciada");
+      $_SESSION["iniciada"] = $iniciada;
+
+		$usuario = 'X';
+		$_SESSION["Usuario"] = $usuario;
+		
+		//Estoy suponiendo que si recien inicio la sesion el usuario aun no se ha loggeado
+		//include_once("data/lib_data.inc");
+		//include("data/dbParams.inc");
+		//$cid = conectar($host,$usr,$pwd);
+		//mssql_select_db ($db, $cid);
+		//$SQL = "UPDATE WebUsuario Set SessionId = '' where SessionId = '$idsesion' ";
+		//OpenQuery($SQL, $cid);
+		
+	} 
+	
+
+	function fetchip() {
+	//get useful vars:
+	if (isset($_SERVER["HTTP_CLIENT_IP"])) {
+	   $client_ip = $_SERVER["HTTP_CLIENT_IP"];
+	} else {
+	   $client_ip="";
+	}   	   
+	if (isSet($_SERVER["HTTP_X_FORWARDED_FOR"])) {
+		$x_forwarded_for = $_SERVER["HTTP_X_FORWARDED_FOR"];
+	};
+	$remote_addr = $_SERVER["REMOTE_ADDR"];
+	// then the script itself
+	if (!empty ($client_ip) ) {
+	$ip_expl = explode(".",$client_ip);
+	$referer = explode(".",$remote_addr);
+	if($referer[0] != $ip_expl[0]) {
+	$ip=array_reverse($ip_expl);
+	$return=implode(".",$ip);
+	} else {
+	$return = $client_ip;
+	};
+	} elseif (!empty($x_forwarded_for) ) {
+	if(strstr($x_forwarded_for,',')) {
+	$ip_expl = explode(',',$x_forwarded_for);
+	$return = end($ip_expl);
+	} else {
+	$return = $x_forwarded_for;
+	};
+	} else {
+	$return = $remote_addr;
+	};
+	unset ($client_ip,$x_forwarded_for,$remote_addr,$ip_expl);
+	return ( $return );
+	};
+  	
+      
+?>
